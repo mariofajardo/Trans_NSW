@@ -1,4 +1,4 @@
-####This script wil read the data from the asd instrument#####
+####This script will read the data from the asd instrument#####
 #####################core_samples_3_rep_2cm_resolution###
 library(pbapply)
 library(reshape)
@@ -83,20 +83,17 @@ setwd('../../../Codes/transect_n_s/Plots/')
 shell.exec('check_spectra.pdf')
 setwd(prev_dir)
 
-insert_columns<- function(a,b){   
-  data.frame(File.Name = a$File.Name,Sample = a$Sample,top = a$top,bottom=a$bottom,b$hor,b$master_hor,a[-(1:4)])
-}
 
 
-cores_ns_DATA <- mapply(insert_columns,tmp_data,hor_names,SIMPLIFY=F)
+cores_NSW_DATA <- tmp_data
 
 
-rawg_spectra<-lapply(cores_ns_DATA,function(x) {
-  spectra<-x[7:2157]
+rawg_spectra<-lapply(cores_NSW_DATA,function(x) {
+  spectra<-x[5:2155]
   spectra})
 
-sample_details<-lapply(cores_ns_DATA,function(x) {
-  spectra<-x[1:6]
+sample_details<-lapply(cores_NSW_DATA,function(x) {
+  spectra<-x[1:4]
   spectra})
 
 setwd(prev_dir)
@@ -251,7 +248,7 @@ no_out_details$Sample <- droplevels(no_out_details$Sample)
 no_out_ground_DATA <- split.data.frame(cbind(no_out_details,new_data[!(new_details$Sample %in% exclude),]),no_out_details$Sample,drop=T)
 
 no_out_data<-lapply(no_out_ground_DATA,function(x) {
-  spectra<-x[7:ncol(x)]
+  spectra<-x[5:ncol(x)]
   colnames(spectra)<-as.numeric(seq(from=500,to=2450,by=10))
   spectra})
 
