@@ -6,3 +6,5 @@ DATA
 RData
 .Rproj.user
 pr_varExp.RData
+*.pdf
+*.csv

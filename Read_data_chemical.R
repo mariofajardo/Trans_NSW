@@ -53,9 +53,9 @@ setwd(prev_dir)
 
 require(spectroscopy)
 spectra <- lapply(rawg_spectra,function(x) x<-correct_step(x))
-spectra <- lapply(rawg_spectra,function(x) x<-filter_sg(x,n = 11,p = 2,m = 0))
-spectra <- lapply(rawg_spectra,function(x) x<-trimSpec(x,c(450,2450),350:2500))
-spectra <- lapply(rawg_spectra,function(x) x<-strip_spectra(x,450:2450,c(450,2450),which = 5))
+# spectra <- lapply(rawg_spectra,function(x) x<-filter_sg(x,n = 11,p = 2,m = 0))
+# spectra <- lapply(rawg_spectra,function(x) x<-trimSpec(x,c(450,2450),350:2500))
+# spectra <- lapply(rawg_spectra,function(x) x<-strip_spectra(x,450:2450,c(450,2450),which = 5))
 # check_plots(spectra,Title = 'CHECK',Ylab = 'CHECK')
 
 NSW_NS <- list()
@@ -90,10 +90,10 @@ spectra_poster <- ggplot(data_poster_melt,aes(as.numeric(variable),y=value))+
         axis.title.y=element_text(size=20))
   
 spectra_poster
-
-# ggsave(filename = '../../../Codes/transect_n_s/Plots/spectra_poster.pdf',spectra_poster,width = 28,height = 42,units='cm')
-
-#####PCA for poster samples ####
+# 
+# # ggsave(filename = '../../../Codes/transect_n_s/Plots/spectra_poster.pdf',spectra_poster,width = 28,height = 42,units='cm')
+# 
+# #####PCA for poster samples ####
 
 scores <-as.data.frame(prcomp(NSW_NS$spectra,center = T,scale. = T)$x)
 
@@ -124,7 +124,7 @@ conf_ellipse <- rbind(conf_ellipse, cbind(as.data.frame(with(scores[NSW_NS$respo
                                                                      level=.90))),Sample='Sites 6 to 26'))
 
 
-#####plot confidence ellipses####
+# #####plot confidence ellipses####
 setwd(prev_dir)
 load('pr_varExp.RData')
 no_out_pr_Exp<-pr_varExp(NSW_NS$spectra)
@@ -149,9 +149,9 @@ scores_poster<-ggplot(scores, aes(x=PC1, y=PC2,colour=System)) +
 
 
 scores_poster
-
-# ggsave(filename = 'Plots/spectra_scores_poster.pdf',scores_poster,width = 42,height = 35,units='cm')
-
+# 
+# # ggsave(filename = 'Plots/spectra_scores_poster.pdf',scores_poster,width = 42,height = 35,units='cm')
+# 
 
 
 #####samples_E_W####
@@ -207,9 +207,9 @@ setwd(prev_dir)
 
 require(spectroscopy)
 spectra <- lapply(rawg_spectra,function(x) x<-correct_step(x))
-spectra <- lapply(rawg_spectra,function(x) x<-filter_sg(x,n = 11,p = 2,m = 0))
-spectra <- lapply(rawg_spectra,function(x) x<-trimSpec(x,c(450,2450),350:2500))
-spectra <- lapply(rawg_spectra,function(x) x<-strip_spectra(x,450:2450,c(450,2450),which = 5))
+# spectra <- lapply(rawg_spectra,function(x) x<-filter_sg(x,n = 11,p = 2,m = 0))
+# spectra <- lapply(rawg_spectra,function(x) x<-trimSpec(x,c(450,2450),350:2500))
+# spectra <- lapply(rawg_spectra,function(x) x<-strip_spectra(x,450:2450,c(450,2450),which = 5))
 # check_plots(spectra,Title = 'CHECK',Ylab = 'CHECK')
 
 NSW_EW <- list()
@@ -218,7 +218,11 @@ NSW_EW <- list()
 NSW_EW$spectra <- do.call(rbind,spectra)
 NSW_EW$responses <-do.call(rbind,sample_details)
 
-
+###Saving dataset for later### 
+NSW_CHEMICAL<- list()
+NSW_CHEMICAL$EW <- NSW_EW
+NSW_CHEMICAL$NS <- NSW_NS
+# saveRDS(object =NSW_CHEMICAL,file = 'RData/NSW_CHEMICAL.Rds')
 
 scores <-rbind(data.frame(Sample=NSW_NS$responses$Sample,
                           Transect='N_S',
@@ -235,19 +239,16 @@ scores <-rbind(data.frame(Sample=NSW_NS$responses$Sample,
                )
 
 
-scores_poster <- ggplot(scores,aes(PC1,PC2))+
-  geom_point(aes(colour=Transect),size=5)+
+scores_NSW <- ggplot(scores,aes(PC1,PC2))+
+  geom_point(aes(colour=system),size=5)+
   theme_bw()+
   theme(strip.text=element_text(size=20,colour = 'white'),
         axis.text.x=element_text(size=20),
         axis.text.y=element_text(size=20),
         axis.title.x=element_text(size=20),
         axis.title.y=element_text(size=20))+
-  geom_text(aes(PC1,PC2,label=Sample),vjust=2)+
-  facet_wrap(~system)
-
-
-scores_poster
+  geom_text(aes(PC1,PC2,label=Sample),vjust=2)
+scores_NSW
 
 require(ellipse)
 conf_ellipse <-data.frame()
@@ -268,16 +269,16 @@ setwd(prev_dir)
 load('pr_varExp.RData')
 no_out_pr_Exp<-pr_varExp(NSW_NS$spectra)
 
-scores$System <-NSW_NS$responses$system
+scores$system <-NSW_NS$responses$system
 
-scores_poster<-ggplot(scores, aes(x=PC1, y=PC2,colour=System)) + 
+scores_poster<-ggplot(scores, aes(x=PC1, y=PC2,colour=system)) + 
   geom_point(alpha=.6,size=7) +
   labs(x=paste0('PC1 :',round(no_out_pr_Exp[1,1],2),'%'), 
        y=paste0('PC2 :',round(no_out_pr_Exp[2,1],2),'%'),
        title=paste0('Cumulative explanation :',
                     round(no_out_pr_Exp[2,2],2),'%')) +
   geom_path(data=conf_ellipse, aes_string(x='x', y='y',colour='Sample'), size=1, linetype=1)+
-  geom_text(aes(x=PC1, y=PC2,label=NSW_NS$responses$Sample),vjust=2,size=5)+
+  geom_text(aes(x=PC1, y=PC2,label=c(NSW_CHEMICAL$NS$responses$Sample,NSW_CHEMICAL$EW$responses$Sample)),vjust=2,size=5)+
   theme(strip.text=element_text(size=20,colour = 'white'),
         axis.text.x=element_text(size=20),
         axis.text.y=element_text(size=20),

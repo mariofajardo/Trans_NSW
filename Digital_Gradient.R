@@ -29,7 +29,8 @@ par(mfrow=c(3,1))
 plot(seq(1,length(serie)),u_mat[,1],type='l',
      main=paste0('Classes membership sample ',sample),
      xlab='Depth',
-     ylab='Membership')
+     ylab='Membership',
+     ylim = c(0,1))
 
 lines(seq(1,length(serie)),u_mat[,2],col='blue')
 if(nrowmat>=3){
@@ -44,6 +45,27 @@ if(nrowmat>=5){
 if(nrowmat>=6){
   lines(seq(1,length(serie)),u_mat[,6],col='yellow')
 }
+if(nrowmat>=6){
+  lines(seq(1,length(serie)),u_mat[,7],col='moccasin')
+}
+if(nrowmat>=6){
+  lines(seq(1,length(serie)),u_mat[,8],col='orange2')
+}
+if(nrowmat>=6){
+  lines(seq(1,length(serie)),u_mat[,9],col='olivedrab2')
+}
+if(nrowmat>=6){
+  lines(seq(1,length(serie)),u_mat[,10],col='paleturquoise3')
+}
+if(nrowmat>=6){
+  lines(seq(1,length(serie)),u_mat[,11],col='salmon4')
+}
+if(nrowmat>=6){
+  lines(seq(1,length(serie)),u_mat[,12],col='tomato3')
+}
+if(nrowmat>=6){
+  lines(seq(1,length(serie)),u_mat[,13],col='thistle2')
+}
 
 
 plot(seq(lag,length(serie),lag),dig_grad,type='l',main='Digital gradient',
@@ -51,9 +73,9 @@ plot(seq(lag,length(serie),lag),dig_grad,type='l',main='Digital gradient',
      ylab='Digital gradient',
      xlim=c(0,length(serie)))
 
-abline(h=.6,col='green')
-abline(h=.5,col='yellow')
-abline(h=.4,col='red')
+abline(h=.4,col='green')
+abline(h=.3,col='yellow')
+abline(h=.2,col='red')
 
 boundaries<-which(dig_grad>threshold,dig_grad)*lag
 
@@ -86,20 +108,28 @@ for (z in boundaries) {
 
 
 upper_bound <- c(0,boundaries)
-lower_bound <- c(boundaries,nrow(fuzzy_data[[sample]]$Clustering$data)*2)
+lower_bound <- c(boundaries,nrow(fuzzy_data[[sample]]$Clustering$membership)*2)
 
+# create_hor <- function(up,down) {
+#   Mode <- function(x) {
+#     ux <- unique(x)
+#     ux[which.max(tabulate(match(x, ux)))]
+#   }
+#   
+#   hor$up<-rep(Mode(rep(fuzzy_data[[sample]]$Clustering$clustering,each=2)[up:down]),(down-up))
+#   
+# }
 create_hor <- function(up,down) {
-  Mode <- function(x) {
-    ux <- unique(x)
-    ux[which.max(tabulate(match(x, ux)))]
-  }
   
-  hor$up<-rep(Mode(rep(fuzzy_data[[sample]]$Clustering$clustering,each=2)[up:down]),(down-up))
-  
+  hor$up<-rep(paste0('spd_',up,'_to_',down),(down-up))
 }
-hor<-list()
-horizon<-unlist(mapply(create_hor,upper_bound,lower_bound))
 
+hor<-list()
+if(length(lower_bound)>1){
+horizon<-unlist(mapply(create_hor,upper_bound,lower_bound))
+}else{
+  horizon <- 'homogeneus'
+}
 horizon_class[[sample]] <-horizon 
 
 
