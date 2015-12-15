@@ -11,7 +11,10 @@ test[,c(10:24,26:29)]<-sapply(colnames(test)[c(10:24,26:29)],function(x) as.nume
 test<- test[,c(1:28,42)]
 colnames(test)
 
+test <- test[match(Transect_NSW_surface_samples$responses$index,test$index),]
+test <- test[complete.cases(test),]
+
 samples_in<-Transect_NSW_surface_samples$responses$index%in%test$index
 Transect_NSW_surface_samples$spectra<-Transect_NSW_surface_samples$spectra[samples_in,]
 Transect_NSW_surface_samples$responses<-test
-saveRDS(Transect_NSW_surface_samples,'RData/NSW_CHEMICAL_with_lab_values_13_8_2105.RDS')
+saveRDS(Transect_NSW_surface_samples,'RData/NSW_CHEMICAL_with_lab_values_13_8_2105_revised.RDS')

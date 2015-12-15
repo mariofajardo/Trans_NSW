@@ -128,7 +128,7 @@ hor<-list()
 if(length(lower_bound)>1){
 horizon<-unlist(mapply(create_hor,upper_bound,lower_bound))
 }else{
-  horizon <- 'homogeneus'
+  horizon <- rep('spd_0_to_100',(lower_bound-upper_bound))
 }
 horizon_class[[sample]] <-horizon 
 

@@ -5,13 +5,14 @@ require(spectroscopy)
 
 if (nrow(input)<2) input<-rbind(input,input)
 # input <- #needs to be a matrix which the server will provide
-colnames(input)<-seq(350,2450)
+colnames(input)<-seq(350,2500)
 #####process input####
 
 if(names(validation)[2]=='slaking'){
-  input <-trimSpec(input,wavlimits=c(500,2450),as.numeric(colnames(input)))
   input<-filter_sg(input,n=11,p=2,m=0)
+  input <-trimSpec(input,wavlimits=c(500,2450),as.numeric(colnames(input)))
   colnames(input)<-seq(500,2450)
+  input <- snvBLC(input)
 } else {
   input <-trimSpec(input,wavlimits=c(500,2450),as.numeric(colnames(input)))
   # if(names(validation)[2]=='pH') input<-log(1/input)
@@ -53,8 +54,9 @@ results <-foreach(model=models,.packages = 'Cubist',.combine = cbind)%dopar%{
   predict(model,input)
 }
 
-sd_predictions <- aaply(results,1,function(x) sd(x,na.rm = T))
-mean_predictions <- rowMeans(results)
+sd_predictions <- apply(results,1,function(x) sd(x[x<=quantile(x,.95) & x>=quantile(x,.05)],na.rm = T))
+mean_predictions <- apply(results,1,function(x) mean(x[x<=quantile(x,.95) & x>=quantile(x,.05)]))
+
 
 predictions <- data.frame(Mean=mean_predictions,Standard_deviation=sd_predictions)
 if(nrow(predictions)==2) predictions <-predictions[1,] # workaround with single observations

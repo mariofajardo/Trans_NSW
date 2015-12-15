@@ -1,7 +1,7 @@
 require(plyr)
 require(reshape2)
 STRUCTURE_DATA<-readRDS('../ASWAT/Files/Processed_DATA.rds')
-CHEMICAL_DATA <-readRDS('RData/NSW_CHEMICAL_with_lab_values_13_8_2105.RDS')
+CHEMICAL_DATA <-readRDS('RData/NSW_CHEMICAL_with_lab_values_13_8_2105_revised.RDS')
 
 View(CHEMICAL_DATA$responses)
 
@@ -34,6 +34,7 @@ Struct_chem[,'C/N'] <-as.numeric(Struct_chem$Total.Carbon)/as.numeric(Struct_che
 colnames(Struct_chem)[-c(1:13,29:32)] <-c('Am_N','Nit_N','P','K','EC','pH_CaCl','pH_H2O','Ex_Al','Ex_Ca',
                                           'Ex_Mg','Ex_K','Ex_Na','N','TC','ECEC','Clay_perc','Ca/Mg','C/N')
 
+Struct_chem <- Struct_chem[match(CHEMICAL_DATA$responses$index,Struct_chem$index),] 
 
 identical(CHEMICAL_DATA$responses$index,Struct_chem$index)
 

@@ -87,6 +87,10 @@ View(Chemical$responses)
 #####Predictions using Katoomba####
 # CORES<-readRDS('RData/NSW_CORES_with_lab_values_18_8_2105.RDS')
 
+cl <-makeCluster(5)
+setMKLthreads(1)
+registerDoSNOW(cl)
+
 require(Cubist)
 require(spectroscopy)
 require(plyr)
@@ -97,17 +101,17 @@ require(clhs)
 
 #####CEC####
 input <- Chemical$spectra
-models <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_50_iter_models_CEC.RData')
-validation <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_val_CEC.RData')
+models <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_50_iter_models_CEC_surf_transect.RData')
+validation <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_val_CEC_surf_transect.RData')
 
-source('../usyd_spectral_lib/Katoomba_spectral_models_JAVA.R')
+source('Katoomba_Properties_pedodiversity.R')
 goof(Chemical$responses$ECEC,predictions$Mean,main='CEC')
 
 
 input <- Chemical$spectra
-models <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_50_iter_models_CEC.RData')
-validation <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_val_CEC.RData')
-source('../usyd_spectral_lib/Katoomba_spectral_models_JAVA.R')
+models <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_50_iter_models_CEC_surf_transect.RData')
+validation <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_val_CEC_surf_transect.RData')
+source('Katoomba_Properties_pedodiversity.R')
 
 Chemical$predictions$CEC_pred<-predictions$Mean
 Chemical$predictions$CEC_pred_sd<-predictions$Standard_deviation
@@ -115,15 +119,9 @@ Chemical$predictions$CEC_pred_sd<-predictions$Standard_deviation
 
 #####Clay####
 input <- Chemical$spectra
-models <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_50_iter_models_Clay.RData')
-validation <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_val_Clay.RData')
-source('../usyd_spectral_lib/Katoomba_spectral_models_JAVA.R')
-
-
-input <- Chemical$spectra
-models <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_50_iter_models_Clay.RData')
-validation <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_val_Clay.RData')
-source('../usyd_spectral_lib/Katoomba_spectral_models_JAVA.R')
+models <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_50_iter_models_Clay_surf_transect.RData')
+validation <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_val_Clay_surf_transect.RData')
+source('Katoomba_Properties_pedodiversity.R')
 
 Chemical$predictions$Clay_pred<-predictions$Mean
 Chemical$predictions$Clay_pred_sd<-predictions$Standard_deviation
@@ -133,7 +131,7 @@ Chemical$predictions$Clay_pred_sd<-predictions$Standard_deviation
 input <- Chemical$spectra
 models <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_50_iter_models_Slaking_a_coef.RData')
 validation <- readRDS('../usyd_spectral_lib/Katoomba_spectral_models/Katoomba_val_Slaking_a_coef.RData')
-source('../usyd_spectral_lib/Katoomba_spectral_models_JAVA.R')
+source('Katoomba_Properties_pedodiversity.R')
 
 
 Structchem<-readRDS('../usyd_spectral_lib/RData/Struct_chem_dataset.rds')
@@ -142,6 +140,6 @@ Chemical$predictions$Slaking_coef_a_pred_sd<-predictions$Standard_deviation
 
 goof(Structchem$responses$SI_a,predictions$Mean[Chemical$responses$index%in%substring(Structchem$responses$index,first=8)])
 
-date<-gsub(' |:','_',date())
-saveRDS(Chemical,paste0('RData/','NSW_CHEMICAL_with_lab_and_prediction',date,'.rds'))
+# date<-gsub(' |:','_',date())
+# saveRDS(Chemical,paste0('RData/','NSW_CHEMICAL_with_lab_and_prediction',date,'.rds'))
 

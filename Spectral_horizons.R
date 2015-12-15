@@ -15,7 +15,7 @@ require(tripack)
 require(plyr)
 require(signal)
 smoothing<-T
-outlier <- T
+outlier <- F
 
 #####Read data and outlier removal####
 ###############################################
@@ -139,8 +139,9 @@ if(outlier){
   gc(reset=T)
 } else {
   no_out_DATA <- snv_DATA
-  names(no_out_DATA)<-sapply(sample_details,function(x) unique(x$Sample))
-  rm(list=as.character(ls()[!ls()%in%c('no_out_ground_DATA','no_out_DATA','prev_dir')]))
+  original_details <- CORES$responses
+  names(no_out_DATA)<-unique(original_details$Sample)
+  rm(list=as.character(ls()[!ls()%in%c('no_out_ground_DATA','no_out_DATA','original_details','prev_dir')]))
 }
 
 
@@ -148,40 +149,40 @@ if(outlier){
 #####Figure Main differences in depth####
 # sample 0C
 
-pdf(file = 'Plots/Main_differences_in_depth_1.pdf',width = 8,height = 8)
-require(reshape2)
-require(ggplot2)
-sample<-'0C'
-spectra <-data.frame(sample=seq(1,(2*nrow(no_out_DATA[[sample]][,-c(1:17)]))),no_out_DATA[[sample]][,-c(1:17)][rep(1:nrow(no_out_DATA[[sample]][,-c(1:17)]), each = 2), ])
-names(spectra)<-c('sample',seq(500,2450,10))
-input_data<-melt(spectra,measure.vars=c(names(no_out_DATA[[sample]][,-c(1:17)])),value.name='abs')
-ggplot(input_data, aes(variable,-sample, fill = abs)) + 
-  geom_tile() +
-  labs(x='Wavelength (nm)',
-       y='Depth (cm)',
-       title = "Absorbance in depth") +
-  scale_x_discrete(breaks=c(500,1000,1500,2000,2450)) +
-  scale_fill_gradient2(low = "green", high = "red",mid='white')+
-  theme(axis.title.x = element_text(size=30),
-        axis.title.y = element_text(size=30),
-        legend.text=element_text(size=20),
-        legend.title=element_text(size=30),
-        title=element_text(size=30),
-        axis.text=element_text(size=20))
-
-dev.off()
+# pdf(file = 'Plots/Main_differences_in_depth_1.pdf',width = 8,height = 8)
+# require(reshape2)
+# require(ggplot2)
+# sample<-'0C'
+# spectra <-data.frame(sample=seq(1,(2*nrow(no_out_DATA[[sample]][,-c(1:17)]))),no_out_DATA[[sample]][,-c(1:17)][rep(1:nrow(no_out_DATA[[sample]][,-c(1:17)]), each = 2), ])
+# names(spectra)<-c('sample',seq(500,2450,10))
+# input_data<-melt(spectra,measure.vars=c(names(no_out_DATA[[sample]][,-c(1:17)])),value.name='abs')
+# ggplot(input_data, aes(variable,-sample, fill = abs)) + 
+#   geom_tile() +
+#   labs(x='Wavelength (nm)',
+#        y='Depth (cm)',
+#        title = "Absorbance in depth") +
+#   scale_x_discrete(breaks=c(500,1000,1500,2000,2450)) +
+#   scale_fill_gradient2(low = "green", high = "red",mid='white')+
+#   theme(axis.title.x = element_text(size=30),
+#         axis.title.y = element_text(size=30),
+#         legend.text=element_text(size=20),
+#         legend.title=element_text(size=30),
+#         title=element_text(size=30),
+#         axis.text=element_text(size=20))
+# 
+# dev.off()
 
 
 #####
-no_out_details <- lapply(no_out_DATA,function(x) x<-x[,c(1:17)])
-new_pr_scores<-prcomp(do.call(rbind,no_out_DATA)[,-c(1:17)],center = T)$x
+no_out_details <- split(original_details,original_details$Sample)
+new_pr_scores<-prcomp(do.call(rbind,no_out_DATA),center = T)$x
 
 
 
-###create fuzzy classes for soil materials with whole dataset#### 
-# it takes a while (about five to six hours with makeCluster(8)) to run this... 
-# the previuosly calculated result can be loaded instead#   
-
+# ##create fuzzy classes for soil materials with whole dataset#### 
+# # it takes a while (about five to six hours with makeCluster(8)) to run this... 
+# # the previuosly calculated result can be loaded instead#   
+# 
 # require(foreach)
 # require(doSNOW)
 # 
@@ -237,8 +238,8 @@ new_pr_scores<-prcomp(do.call(rbind,no_out_DATA)[,-c(1:17)],center = T)$x
 # 
 # fuzzy_2_20_whole <- fanny_data_by_sample_pc_euc_no_out
 # # 
-# save(fuzzy_2_20_whole,file='RData/fuzzy_2_20_whole.RData')
-load('RData/fuzzy_2_20_whole.RData')
+# save(fuzzy_2_20_whole,file='RData/fuzzy_2_20_whole_no_outliers.RData')
+load('RData/fuzzy_2_20_whole_no_outliers.RData')
 fanny_data_by_sample_pc_euc_no_out <-fuzzy_2_20_whole
 
 #####Comparison of confuzion index#####
@@ -315,7 +316,7 @@ rug(fuzzy_data$Confusion_Index)
 dev.off()
 setwd('Plots/')
 shell.exec(file = 'Confusion_index_whole.pdf')
-setwd(prev_dir)
+setwd('../')
 
 
 #####check clusters####
@@ -350,17 +351,17 @@ for (z in 1:5) {
 }
 
 
-abline(v=13,lty=2,h=tmp_fpi[2,12])
+abline(v=14,lty=2,h=tmp_fpi[3,14])
 
 dev.off()
 setwd('Plots/')
 shell.exec(file = 'FPI_whole.pdf')
-
+setwd('../')
 #####
 require(plyr)
 phi <- 'phi1.4'
-classes <-'cluster13'
-class_num<-13
+classes <-'cluster14'
+class_num<-14
 
 extract_CI<-function(fuzz_data) {
   aaply(fuzz_data,1,function(y){
@@ -376,7 +377,7 @@ extract_entropy<-function(fuzz_data) {
 }
 
 fuzzy_data <- list()
-data <- data.frame(Sample=do.call(rbind,no_out_DATA)$Sample)
+data <- data.frame(Sample=original_details$Sample)
 
 for (i in names(no_out_DATA)){
   fuzzy_data[[i]][['Clustering']][['membership']]<- fanny_data_by_sample_pc_euc_no_out[[phi]][[classes]]$membership[data$Sample==i,]
@@ -390,7 +391,6 @@ for (i in names(no_out_DATA)){
 
 data_type<-'dry'
 
-no_out_details <- split(do.call(rbind,no_out_DATA)[,1:17],do.call(rbind,no_out_DATA)[,2])
 
 check_classes <- data.frame(do.call(rbind,no_out_details),class=do.call(c,sapply(fuzzy_data,function(x) x$Clustering$clustering,USE.NAMES = F)),do.call(rbind,no_out_DATA)[,-c(1:17)],row.names = NULL)
 
@@ -436,7 +436,7 @@ shell.exec(file = 'Centroids.pdf')
 
 #####Check centroids relative distribution####
 centroids <- ddply(check_classes,'class',function(x) {
-  colMeans(x[,-c(1:18)])
+  colMeans(x[,grepl('X',colnames(x))])
 },.drop=T)
 
 
@@ -482,7 +482,7 @@ legend(17,8.3,
 dev.off()
 
 shell.exec(file = 'Centroids_dendro_numbers.pdf')
-setwd(prev_dir)
+
 
 
 # #####Reorder centroids and their respective colors based on its distance####
@@ -694,28 +694,24 @@ str(horizon_class)
 
 horizon_class <- sapply(horizon_class, function(x) x[seq(1,length(x),2)])
 
-no_out_details_final <- no_out_details[sapply(horizon_class,function(x) unique(x!='homogeneus'),USE.NAMES = F)]
-no_out_data_final <- no_out_DATA[sapply(horizon_class,function(x) unique(x!='homogeneus'),USE.NAMES = F)]
+no_out_details_final <- no_out_details
+no_out_data_final <- no_out_DATA
 
-data <- data.frame(hor_class=do.call(c,horizon_class[horizon_class!='homogeneus']),do.call(rbind,no_out_data_final[names(horizon_class)]),row.names = NULL) 
+data <- data.frame(Sample=do.call(rbind,no_out_details)$Sample,hor_class=do.call(c,horizon_class),do.call(rbind,no_out_data_final[names(horizon_class)]),row.names = NULL) 
 
-thickness_of_first_spd_hor <- unlist(by(data,data$Sample,function(x) regmatches(x$hor_class[1],regexpr('[[:digit:]]{2}$',x$hor_class[1],perl=T))))
-
-first_spd_hor_thickness <-data.frame(Sample=names(horizon_class),thickness_of_first_spd_hor=NA)
-first_spd_hor_thickness[!names(horizon_class)%in%names(thickness_of_first_spd_hor),'thickness_of_first_spd_hor'] <- 100
-first_spd_hor_thickness[first_spd_hor_thickness$Sample%in%names(thickness_of_first_spd_hor),'thickness_of_first_spd_hor'] <- thickness_of_first_spd_hor
+thickness_of_first_spd_hor <- unlist(by(data,as.character(data$Sample),function(x) regmatches(x$hor_class[1],regexpr('[[:digit:]]{1,3}$',x$hor_class[1],perl=T))))
+require(naturalsort)
+first_spd_hor_thickness <-data.frame(Sample=names(horizon_class),Thickness_first_hor=unlist(as.list(thickness_of_first_spd_hor))[naturalorder(names(thickness_of_first_spd_hor))])
 
 
 number_of_spd_hor <- unlist(by(data,data$Sample,function(x) length(unique(x$hor_class)),simplify = F))
 
-spd_hor_number <-data.frame(Sample=names(horizon_class),number_of_spd_hor=NA)
-spd_hor_number[!names(horizon_class)%in%names(number_of_spd_hor),'number_of_spd_hor'] <- 1
-spd_hor_number[names(horizon_class)%in%names(number_of_spd_hor),'number_of_spd_hor'] <- number_of_spd_hor
+spd_hor_number <-data.frame(Sample=names(horizon_class),number_of_spd_hor=number_of_spd_hor)
 
 spd_hor_number
 
 horizons <- data.frame(Sample=spd_hor_number[,1],num_spd_hor=spd_hor_number[,2],first_spd_hor_thickness=first_spd_hor_thickness[,2]) 
 
-
+# 
 # date<-gsub(' |:','_',date())
 # saveRDS(horizons,paste0('RData/','horizons',date,'.rds'))

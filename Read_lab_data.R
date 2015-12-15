@@ -64,60 +64,6 @@ Spectra_NSW_chemical_responses<-join(Spectra_NSW_chemical_responses,LAB_NSW,
 
 View(Spectra_NSW_chemical_responses)
 
-# ###make models to predict rep 2 chemical values ###
-# 
-# require(Cubist)
-# require(clhs)
-# require(spectroscopy)
-# 
-# scores <-as.data.frame(prcomp(Spectra_NSW_chemical_spectra[Spectra_NSW_chemical_spectra$index%in%INDEX_LAB_NS_EW,as.character(seq(350,2500))])$x[,1:20])
-# set.seed(1)
-# train <- clhs(scores,size=nrow(scores)*.9,iter=15000)
-# 
-# require(doSNOW)
-# require(foreach)
-# 
-# 
-# spectra <-Spectra_NSW_chemical_spectra[Spectra_NSW_chemical_spectra$index%in%INDEX_LAB_NS_EW,as.character(seq(350,2500))]
-# spectra_predicted <- Spectra_NSW_chemical_spectra[!Spectra_NSW_chemical_spectra$index%in%INDEX_LAB_NS_EW,as.character(seq(350,2500))] 
-# 
-# pdf('Plots/check_models.pdf')
-# models<-lapply(colnames(LAB_NSW)[6:20],function(x){
-#   
-#   cl<-makeCluster(8)
-#   registerDoSNOW(cl)
-#   
-#   tmp_preds<-foreach(iters=1:16,
-#                      .packages = c('Cubist','spectroscopy','plyr'),
-#                      .export = c('spectra','train','LAB_NSW','spectra_predicted')) %dopar% {  
-#   
-#   set.seed(iters+1)  
-#   iteration<-sample(train,size = floor(length(train)*.95))
-# #   if(x%in%colnames(LAB_NSW_NS)[6]){
-# #   model<-cubist(spectra[iteration,],as.numeric(LAB_NSW_NS[iteration,x]))
-# #   }else{
-#   model<-cubist(spectra[iteration,],as.numeric(LAB_NSW[iteration,x]),committees = 5,control = cubistControl(rules = 2))
-# #   }
-#   tmp_result<-list()
-#   tmp_result$val_preds<-predict(model,spectra[-train,])
-#   tmp_result$preds<-predict(model,spectra_predicted)
-#   tmp_result
-#   }
-#   
-#   acc <- goof(as.numeric(LAB_NSW[-train,x]),colMeans(ldply(tmp_preds,function(x) x$val_preds)))
-#   text(as.numeric(LAB_NSW[-train,x]),colMeans(ldply(tmp_preds,function(x) x$val_preds)),labels = LAB_NSW[-train,'index'])
-#   title(main=paste0(x,' R2:', round(acc$R2,2)))
-#   preds<-colMeans(ldply(tmp_preds,function(x) x$preds))
-#   stand_dev<-apply(ldply(tmp_preds,function(x) x$preds),2,sd)  
-#   results<-list(preds=preds,sd=stand_dev,acc=acc)
-#   stopCluster(cl)
-#   results
-#   })
-# 
-# dev.off()
-# 
-# ###not very good models.... :(   #
-
 #Export the database of Chemical samples#
 
 
